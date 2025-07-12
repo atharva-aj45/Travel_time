@@ -1,4 +1,4 @@
-# CrowdSense Transit Routing System
+# Hyderabad Transit Route Planner
 C++ implementation of a Transit Routing System designed to compute the shortest path (in terms of travel time) between two stations in a simplified model of Hyderabad’s transit network using Dijkstra's Algorithm.
 
 ---
