@@ -3,63 +3,65 @@ C++ implementation of a Transit Routing System designed to compute the shortest 
 
 ---
 ## Features
-- Calculates the shortest travel time between two stations
-- Displays the full path followed from source to destination
-- Uses Dijkstra’s algorithm for optimal routing
-- Simple terminal-based interaction
-- Efficient implementation using priority queues
+- Computes the **fastest route** between any two stations based on travel time  
+- **Interactive input correction**: detects mistyped station names and suggests the closest match using the Levenshtein (edit distance) algorithm  
+- **Case-insensitive** station name handling for robust user input  
+- **Re-prompts** on invalid input until a valid station is entered  
+- Displays both the **ordered list of stations** on the optimal path and the **total estimated travel time**  
+- Efficient graph representation with **priority queue** (min‑heap) for Dijkstra’s algorithm
+  
 ---
 ## Concepts used
-- Graph Data sturcture
-- Dijkstra’s Shortest Path Algorithm
-- Priority Queue / Min Heap
-- Path Reconstruction using parent tracking
+- **Graph Data Structure**: adjacency list representation of a weighted, undirected graph  
+- **Dijkstra’s Shortest Path Algorithm**: finds the minimum travel-time path in O((V + E) log V) time  
+- **Levenshtein Distance**: dynamic programming approach for computing edit distance to suggest closest station names  
+- **Priority Queue / Min Heap**: for selecting the next vertex with the smallest tentative distance  
+- **Path Reconstruction**: tracking parent pointers to build the route in reverse order  
 
 ---
 ##  Working
 
 The program proceeds through five clearly defined stages:
 
-1. **Graph Initialisation**  
-   * A Graph object is instantiated with *V = 23* vertices, one for each station in the network.  
-   * All stations are stored in the global stationNames vector for straightforward name‑to‑index look‑ups.
+1. **Graph Initialization**  
+   - A `Graph` object is created with V = 23 vertices, one per station in `stationNames`.  
+   - All station names are stored in a global vector for name‑to‑index and index‑to‑name lookups.  
 
 2. **Edge Construction**  
-   * The vector edges lists every bidirectional road segment along with its travel time (in minutes).  
-   * Each tuple ⟨*u, v, t*⟩ is inserted into the adjacency list using addEdge(u, v, t), creating a *weighted, undirected* graph that models the transit network.
+   - A list of bidirectional edges with estimated travel times is defined as tuples `<u, v, time>`.  
+   - `addEdge(u, v, time)` populates the adjacency list, modeling the transit network.  
 
-3. **User Interaction**  
-   * The program prompts the user for **source** and **destination** station names via getline.  
-   * stationIndex() converts each name to its corresponding numeric index.  
-   * Invalid input is detected immediately; if either station is missing from the list, the program terminates with an error message.
-
-4. **Shortest‑Path Computation (Dijkstra’s Algorithm)**  
-   * dijkstra(src, dist, parent) initialises all distances to INT_MAX, except dist[src] = 0, and pushes the source into a **min‑priority queue**.  
-   * While the queue is non‑empty, the vertex with the smallest tentative distance is extracted.  
-   * For every adjacent edge (*u → v*, *cost*), the *relaxation* step updates dist[v] and records parent[v] = u when a shorter path is discovered.  
-   * The algorithm runs in *O((V + E) log V)* time thanks to the heap‑based priority queue and terminates when all vertices have been settled.
-
-5. **Path Reconstruction & Output**  
-   * After Dijkstra completes, dist[destination] holds the **minimum travel time**.  
-   * printPath(destination, parent) backtracks from the destination to the source via the parent vector, reverses the resulting sequence, and prints a human‑readable route such as  
+3. **User Input & Validation**  
+   - The program prompts for **source** and **destination** names via `getline()`.  
+   - `getValidStationIndex()` loops until `stationIndex()` returns a valid index.  
+   - On invalid input, the program prints:  
      ```
-     Patancheru -> RC_Puram -> … -> LB_Nagar
-     ```  
-   * The final output therefore consists of both  
-     * the *numeric* shortest travel time in minutes, and  
-     * the *ordered* list of stations on the optimal path.
+     Invalid station name.  
+     Did you mean: <suggestion>?  
+     ```
+     and re-prompts.  
 
+4. **Shortest-Path Computation**  
+   - dijkstra(src, dist, parent) initializes all distances to INT_MAX except dist[src] = 0.  
+   - A min‑heap stores (distance, vertex).  
+   - In each iteration, the vertex with the smallest distance is extracted and its edges relaxed.  
+
+5. **Output & Path Reconstruction**  
+   - After Dijkstra’s run, dist[destination] holds the **minimum travel time**.  
+   - printPath(destination, parent) backtracks via the parent array, reverses the station indices, and prints the route:  
+     ```
+     StationA -> StationB -> ... -> StationZ
+     ```
+   - The program also outputs the total estimated time:  
+     ```
+     Estimated Time: XX mins
+     ```
 This workflow ensures the program consistently returns the fastest available route through the predefined Hyderabad‑area network while maintaining a clear, modular structure for future extensions.
 ---
 ##  Limitations
-- **Estimated Travel Times**  
-  The travel durations are manually set and only serve as approximations. They do not reflect real-time traffic or official transit data.
-- **Simplified Network**  
-  The network is a simplified model of Hyderabad's transit system. The roads and paths used are **not exact** and may be slightly away from actual routes.
-- **No Real-Time or Geo-Based Data**  
-  The system does not use live traffic updates, GPS coordinates, or dynamic routing based on current conditions.
-- **Limited Station Coverage**  
-  Only 23 major stations are included for demonstration. Many real-life connections are excluded.
+- **Estimated Travel Times**: edge weights are approximations and not based on live traffic or official schedules.  
+- **Simplified Network**: only 23 stations are modeled; many real-life connections and modes of transit are omitted.  
+- **No Real-Time Data**: the system does not integrate GPS, dynamic traffic, or schedule APIs.  
 ---
   # Authur
   -**Atharva Joshi**<br>
