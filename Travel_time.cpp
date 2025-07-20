@@ -10,6 +10,74 @@ vector<string> stationNames = {
     "Jubilee_Hills", "Yusufguda", "Panjagutta"
 };
 
+// Convert string to lowercase
+string toLower(string s) {
+    int n=s.length();
+    for(int i=0;i<n;i++){
+        if(s[i]>='A' && s[i]<='Z'){
+            s[i] = s[i] - 32;
+        }
+    }
+    return s;
+}
+
+// Levenshtein Distance (Edit Distance)
+int editDistance(const string& a, const string& b) {
+    int m = a.size(), n = b.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1));
+
+    for(int i=0;i<= m; ++i) dp[i][0] = i;
+    for(int j=0;j<=n; ++j) dp[0][j] = j;
+
+    for (int i= 1; i<=m; i++) {
+        for (int j= 1;j<= n; j++) {
+            if (a[i-1] == b[j-1])
+                dp[i][j] = dp[i-1][j-1];
+            else
+                dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});
+        }
+    }
+    return dp[m][n];
+}
+
+// Suggest the closest matching station name
+string suggestClosestStation(const string& input) {
+    int minDist = INT_MAX;
+    string closest = "";
+    for (const auto& station : stationNames) {
+        int dist = editDistance(toLower(input), toLower(station));
+        if (dist < minDist) {
+            minDist = dist;
+            closest = station;
+        }
+    }
+    return closest;
+}
+
+// Get station index with input validation and suggestion
+int stationIndex(const string& name) {
+    string lowerName = toLower(name);
+    for (size_t i = 0; i < stationNames.size(); ++i) {
+        if (toLower(stationNames[i]) == lowerName)
+            return i;
+    }
+    return -1;
+}
+
+// Repeated prompt until valid station is entered
+int getValidStationIndex(const string& prompt) {
+    string input;
+    while (true) {
+        cout << prompt;
+        getline(cin, input);
+        int index = stationIndex(input);
+        if (index != -1)
+            return index;
+
+        cout << "Invalid station name.\n";
+        cout << "Did you mean: " << suggestClosestStation(input) << "?\n";
+    }
+}
 struct Edge { 
     int to, time;
 };
@@ -67,14 +135,6 @@ void printPath(int node, const vector<int>& parent) {
     cout << "\n";
 }
 
-// returns the node for respective Station name
-int stationIndex(const string& name) {
-    for (int i = 0; i < stationNames.size(); ++i)
-        if (stationNames[i] == name)
-            return i;
-    return -1;
-}
-
 int main() {
     const int n = 23;
     Graph g(n);
@@ -115,33 +175,26 @@ int main() {
         {19, 7, 15},
         {20, 9, 12},
         {16, 9, 10},
-        {14, 13, 9}
+        {14, 13, 9},
+        {6, 14, 6},  {4, 13, 6},        
+        {2, 14, 8},  {13, 21, 10},{3, 5, 7},         
+        {8, 13, 5},  {1, 4, 9},   {12, 15, 6}
     };
 
     for (const auto& [u, v, c] : edges) { // structured binding
         g.addEdge(u, v, c);
     }
 
-    // Taking input of Starting station and end station
-    string startName, endName;
-    cout << "Enter starting point: ";
-    getline(cin, startName);
-    cout << "Enter destination point: ";
-    getline(cin, endName);
+    int start = getValidStationIndex("Enter starting point: ");
+    int end = getValidStationIndex("Enter destination point: ");
 
-    int start = stationIndex(startName), end = stationIndex(endName);
-    if (start == -1 || end == -1) {
-        cout << "Invalid station name.\n";
-        return 1;
-    }
-
-    // Dijkshatra Algorithm
     vector<int> dist, parent;
     g.dijkstra(start, dist, parent);
 
-    // print output as time requred and path
-    cout << "\nShortest path from " << startName << " to " << endName << " (" << dist[end] << " mins): ";
+    cout << "\nShortest path: ";
     printPath(end, parent);
+    cout << "Estimated Time: "<< dist[end] << "mins" <<endl;
+
     return 0;
 }
 
